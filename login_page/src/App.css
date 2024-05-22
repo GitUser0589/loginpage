@@ -1,0 +1,63 @@
+body {
+  display: flex; /* Make the body a flex container */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  min-height: 100vh; /* Set minimum height for viewport */
+  margin: 0; /* Remove default body margin */
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-position: center; /* Center the image horizontally and vertically */
+  background-size: cover; /* Scale the image to cover the entire container */
+  background-repeat: no-repeat; /* Prevent image tiling */
+}
+
+.login-container h1 {
+  margin-bottom: 20px;
+  font-size: 2em;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 20px;
+  border: 1px solid #ffffff9a;
+  border-radius: 5px;
+}
+
+label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-bottom: 15px;
+}
+
+button[type="submit"] {
+  background-color: #833a77;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #522037;
+}
