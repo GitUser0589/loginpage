@@ -1,49 +1,22 @@
-import './App.css'
-import React, { useState } from 'react';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from './login'; // Import Login component directly
+import SignUp from "./signup";
 
-function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Login />, // Login as the default route
+  },
+  {
+    path: 'SignUp',
+    element: <SignUp />
+  }
+]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    // Simulate login logic (replace with your actual authentication)
-    if (username === 'user' && password === 'password') {
-      // Login successful
-      console.log('Login successful!');
-      // Redirect or handle successful login here
-    } else {
-      setErrorMessage('Invalid username or password');
-    }
-  };
-
+function App() {
   return (
-    <body>
-      <div className="login-container">
-      <h1>Login</h1>
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="username">Username:</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
-    </body>
+    <RouterProvider router={router} />
   );
 }
 
-export default Login;
+export default App;
