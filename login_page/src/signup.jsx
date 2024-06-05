@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import supabase from './supabase';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -41,19 +42,16 @@ function SignUp() {
       return;
     }
 
-    // **API call or other sign-up logic:**
+    // **Supabase call to insert data:**
     try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      const { data, error } = await supabase
+        .from('users') // Replace 'users' with your table name
+        .insert([formData]);
 
-      if (!response.ok) {
-        throw new Error(`Sign-up failed: ${response.statusText}`);
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
       console.log('Sign-up successful:', data); // Handle successful sign-up
     } catch (error) {
       setError(error.message);
