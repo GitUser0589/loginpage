@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import supabase from './supabase';
+import supabase from '../src/supabase';
 
 function SignUp() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
   });
 
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null); // New state for success message
 
   const handleChange = (event) => {
     setFormData({
@@ -23,6 +23,7 @@ function SignUp() {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setSuccessMessage(null); // Reset success message before submission
 
     // **Validation:**
     if (!formData.name) {
@@ -37,10 +38,6 @@ function SignUp() {
       setError('Password must be at least 8 characters long.');
       return;
     }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
 
     // **Supabase call to insert data:**
     try {
@@ -52,7 +49,8 @@ function SignUp() {
         throw error;
       }
 
-      console.log('Sign-up successful:', data); // Handle successful sign-up
+      console.log('Sign-up successful:', data);
+      setSuccessMessage('Sign-up successful! You can now log in.'); // Set success message
     } catch (error) {
       setError(error.message);
     } finally {
@@ -98,18 +96,8 @@ function SignUp() {
             minLength={8}
           />
         </label>
-        <label htmlFor="confirmPassword">
-          Confirm Password:
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </label>
         {error && <p className="error-message">{error}</p>}
+        {successMessage && <p className="success-message">{successMessage}</p>}
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Signing Up...' : 'Sign Up'}
         </button>
