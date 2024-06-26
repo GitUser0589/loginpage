@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import supabase from './supabase';
+import supabase from './supabase'; // Import your Supabase client
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -10,29 +10,57 @@ function Login() {
 
   const navigate = useNavigate();
 
+  // Implement your user login function here
+  const userLogin = async (email, password) => {
+    try {
+      // Query the "users" table with email filter
+      const { data, error } = await supabase
+        .from('users')
+        .select('*') // Select all columns (adjust if needed)
+        .eq('email', email)
+        .single();
+
+      if (error) {
+        throw new Error('Error fetching user data'); // Re-throw for handling in handleSubmit
+      }
+
+      // Check if user exists
+      if (!data) {
+        return 'Invalid email or password.'; // User not found
+      }
+
+      // Compare password hashes securely (assuming hashed passwords)
+      const isPasswordValid = await supabase.auth.verifyPassword({
+        identifier: email,
+        password,
+        token: data.access_token, // Use access token from retrieved user data
+      });
+
+      if (isPasswordValid.error) {
+        return 'Invalid email or password.'; // Password mismatch
+      }
+
+      // Login successful, return user data
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      return 'An unexpected error occurred. Please try again.'; // Generic error for unexpected issues
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     setErrorMessage(''); // Clear any previous error message
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        // **Credential Check:** This section attempts to sign in the user with Supabase using the provided email and password.
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Login error:', error); // Log the error for debugging
-        // Handle specific error codes (if available):
-        if (error.error_code === 'auth/incorrect-email-or-password') {
-          setErrorMessage('Invalid email or password.');
-        } else {
-          setErrorMessage('An error occurred during login. Please try again.');
-        }
-      } else {
+      const userData = await userLogin(email, password); // Call the userLogin function
+      if (userData) {
         console.log('Login successful!');
-        navigate('/home'); // Redirect to home page after successful login
+        setErrorMessage('Login Successful!');
+        setTimeout(() => navigate('/home'), 1000); // Redirect after 1 second
+      } else {
+        setErrorMessage(userData); // Set error message from userLogin
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -41,36 +69,34 @@ function Login() {
   };
 
   return (
-    <body>
-      <div className="login-container">
-        <h1>Login</h1>
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Login</button>
+    <div className="login-container">
+      <h1>Login</h1>
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
 
-          {/* Link to signup page */}
-          <p>
-            Don't have an account? <Link to="/signup">Sign Up</Link>
-          </p>
-        </form>
-      </div>
-    </body>
+        {/* Link to signup page */}
+        <p>
+          Don't have an account? <Link to="/signup">Sign Up</Link>
+        </p>
+      </form>
+    </div>
   );
 }
 
