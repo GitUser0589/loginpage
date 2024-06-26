@@ -55,10 +55,11 @@ function Login() {
 
     try {
       const userData = await userLogin(email, password); // Call the userLogin function
-      if (userData) {
-        console.log('Login successful!');
-        setErrorMessage('Login Successful!');
-        setTimeout(() => navigate('/home'), 1000); // Redirect after 1 second
+      
+    if (userData) {
+      console.log('Login successful!');
+      setErrorMessage('Login Successful!');
+      setTimeout(() => navigate('/dashboard'), 1000); 
       } else {
         setErrorMessage(userData); // Set error message from userLogin
       }

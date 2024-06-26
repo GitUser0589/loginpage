@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from './login'; // Import Login component directly
 import SignUp from "./signup";
+import { Dashboard } from "@mui/icons-material";
 
 const router = createBrowserRouter([
   {
@@ -10,6 +11,10 @@ const router = createBrowserRouter([
   {
     path: 'SignUp',
     element: <SignUp />
+  },
+  {
+    path: 'dashboard',
+    element: <Dashboard />
   }
 ]);
 
