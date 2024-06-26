@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from './login'; // Import Login component directly
 import SignUp from "./signup";
-import { Dashboard } from "@mui/icons-material";
+import Dashboard from './dashboard';
 
 const router = createBrowserRouter([
   {

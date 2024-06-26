@@ -4,6 +4,7 @@ body {
   align-items: center; /* Center content vertically */
   min-height: 100vh; /* Set minimum height for viewport */
   margin: 0; /* Remove default body margin */
+  background-image: url("../src/assets/bg.jpg");
 }
 
 .login-container {
