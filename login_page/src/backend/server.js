@@ -3,25 +3,20 @@ const mysql = require('mysql')
 const cors = require('cors')
 
 const app = express()
-app.use(cors())
 
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
-    database: "gym_sched"
+    password: '',
+    database: 'gym_sched'
 })
 
+const allowedOrigins = ['http://localhost:5174']; // Replace with your frontend origin
+const corsOptions = {
+  origin: allowedOrigins
+};
 app.get('/', (re, res)=> {
     return res.json("From Backend side");
-})
-
-app.get('/customer', (req, res)=> {
-    const sql = "SELECT * FROM customer";
-    db.query(sql, (err, data)=> {
-        if(err) return res.json(err);
-        return res.json(data);
-    })
 })
 
 app.listen(8081, ()=> {

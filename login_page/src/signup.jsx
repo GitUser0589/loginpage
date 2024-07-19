@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import connection from '../src/backend/server.js';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -8,63 +7,53 @@ function SignUp() {
     password: '',
   });
 
-  const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(null); // New state for success message
-
-  const handleChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
-  };
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setIsSubmitting(true);
     setError(null);
-    setSuccessMessage(null); // Reset success message before submission
+    setSuccessMessage(null);
+
     try {
-      const connection = await getConnection(); // Wait for connection to be established
+      const url = 'http://localhost:3000/customer'; // Replace with your backend URL
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.username, password: formData.password }),
+      });
+  
 
-      const [results] = await connection.execute(
-        'INSERT INTO customer (name, email, password) VALUES (?, ?, ?)',
-        [formData.name, formData.email, formData.password]
-      );
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`);
+      }
 
-      console.log('Sign-up successful:', results);
+      const data = await response.json();
+      console.log('Sign-up successful:', data);
       setSuccessMessage('Sign-up successful! You can now log in.');
     } catch (error) {
-      setError(error.message); // Handle any errors during connection or query execution
+      console.error('Error during signup:', error);
+      setError(error.message || 'An unexpected error occurred. Please try again.');
     } finally {
-      // Close the connection (optional, might be handled by connection pool)
-      connection.end();
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="signup-form">
       <h1>Sign Up</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="name">
-          Name:
+        <label htmlFor="username">
+          username:
           <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label htmlFor="email">
-          Email:
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
+            type="username"
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             required
           />
         </label>
@@ -75,7 +64,7 @@ function SignUp() {
             id="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
             minLength={8}
           />
