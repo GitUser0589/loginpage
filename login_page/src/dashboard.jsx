@@ -1,79 +1,121 @@
-import { useState } from 'react';
-import './calculator.css';
+import { useState } from 'react'
+import './calculator.css'
 
 const Calculator = () => {
   const [history, setHistory] = useState('');
   const [output, setOutput] = useState('');
+
+  const getHistory = () => history;
+  const printHistory = (num) => setHistory(num);
+
+  const getOutput = () => output;
+  const printOutput = (num) => {
+    if (num === '') {
+      setOutput(num);
+    } else {
+      setOutput(getFormattedNumber(num));
+    }
+  };
 
   const getFormattedNumber = (num) => {
     if (num === '-') {
       return '';
     }
     const n = Number(num);
-    const value = n.toLocaleString('en');
-    return value;
+    return n.toLocaleString('en');
   };
 
   const reverseNumberFormat = (num) => {
     return Number(num.replace(/,/g, ''));
   };
 
-  const handleClick = (event) => {
-    const value = event.target.innerText;
-    switch (value) {
-      case 'C':
-        setHistory('');
-        setOutput('');
-        break;
-      case 'CE':
-        const newOutput = output.slice(0, -1);
-        setOutput(newOutput);
-        break;
-      case '=':
-        const result = eval(history);
-        setOutput(result);
-        setHistory('');
-        break;
-      default:
-        if (!isNaN(value) || value === '.') {
-          setOutput(output + value);
+  const handleOperatorClick = (id) => {
+    if (id === 'clear') {
+      printHistory('');
+      setOutput('');
+    } else if (id === 'backspace') {
+      const currentOutput = reverseNumberFormat(getOutput()).toString();
+      if (currentOutput) {
+        setOutput(currentOutput.substr(0, currentOutput.length - 1));
+      }
+    } else {
+      const currentOutput = getOutput();
+      const currentHistory = getHistory();
+      if (currentOutput === '' && currentHistory !== '') {
+        if (isNaN(currentHistory[currentHistory.length - 1])) {
+          setHistory(currentHistory.substr(0, currentHistory.length - 1));
+        }
+      }
+      if (currentOutput !== '' || currentHistory !== '') {
+        const formattedOutput = currentOutput === '' ? currentOutput : reverseNumberFormat(currentOutput);
+        const newHistory = currentHistory + formattedOutput;
+        if (id === '=') {
+          try {
+            const result = eval(newHistory);
+            setOutput(result);
+            setHistory('');
+          } catch (error) {
+            setOutput('Error');
+          }
         } else {
-          const newHistory = history + ' ' + output + ' ' + value;
-          setHistory(newHistory);
+          setHistory(newHistory + id);
           setOutput('');
         }
+      }
     }
   };
 
+  const handleNumberClick = (id) => {
+    const currentOutput = reverseNumberFormat(getOutput());
+    if (!isNaN(currentOutput)) {
+      setOutput(currentOutput + id);
+    }
+  };
+  const buttons = [
+    { id: 'clear', value: 'C', className: 'operator' },
+    { id: 'backspace', value: 'CE', className: 'operator' },
+    { id: '%', value: '%', className: 'operator' },
+    { id: '/', value: '/', className: 'operator' },
+    { id: '7', value: '7', className: 'number' },
+    { id: '8', value: '8', className: 'number' },
+    { id: '9', value: '9', className: 'number' },
+    { id: '*', value: 'x', className: 'operator' },
+    { id: '4', value: '4', className: 'number' },
+    { id: '5', value: '5', className: 'number' },
+    { id: '6', value: '6', className: 'number' },
+    { id: '-', value: '-', className: 'operator' },
+    { id: '1', value: '1', className: 'number' },
+    { id: '2', value: '2', className: 'number' },
+    { id: '3', value: '3', className: 'number' },
+    { id: '+', value: '+', className: 'operator' },
+    { id: '0', value: '0', className: 'number' },
+    { id: '.', value: '.', className: 'number' }, // Add decimal button
+    { id: '=', value: '=', className: 'operator' },
+  ];
+
   return (
-    <div id="calculator">
-      <div id="result">
-        <div id="history">
-          <p>{history}</p>
+    <div id="container" className="calculator-container">
+      <div id="calculator" className="calculator">
+        <div id="result" className="result">
+          <div id="history">
+            <p>{getHistory()}</p>
+          </div>
+          <div id="output">
+            <p>{getOutput()}</p>
+          </div>
         </div>
-        <div id="output">
-          <p>{getFormattedNumber(output)}</p>
+        <div id="keyboard" className="keyboard">
+          {buttons.map((button) => (
+            <button
+              key={button.id}
+              className={button.className}
+              id={button.id}
+              onClick={() => (button.className === 'operator' ? handleOperatorClick(button.id) : handleNumberClick(button.id))}
+            >
+              {button.value}
+            </button>
+          ))}
         </div>
-      </div>
-      <div id="keyboard" onClick={handleClick}>
-        <button className="operator">C</button>
-        <button className="operator">CE</button>
-        <button className="operator">%</button>
-        <button className="operator">/</button>
-        <button className="number">7</button>
-        <button className="number">8</button>
-        <button className="number">9</button>
-        <button className="operator">*</button>
-        <button className="number">4</button>
-        <button className="number">5</button>
-        <button className="number">6</button>
-        <button className="operator">-</button>
-        <button className="number">1</button>
-        <button className="number">2</button>
-        <button className="number">3</button>
-        <button className="operator">+</button>
-        <button className="number">0</button>
-        <button className="operator">=</button>
       </div>
     </div>
   );

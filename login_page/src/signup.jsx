@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import supabase from '../src/supabase';
+import connection from '../src/backend/server.js';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -24,40 +24,24 @@ function SignUp() {
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null); // Reset success message before submission
-
-    // **Validation:**
-    if (!formData.name) {
-      setError('Please enter your name.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (!formData.password || formData.password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-
-    // **Supabase call to insert data:**
     try {
-      const { data, error } = await supabase
-        .from('users') // Replace 'users' with your table name
-        .insert([formData]);
+      const connection = await getConnection(); // Wait for connection to be established
 
-      if (error) {
-        throw error;
-      }
+      const [results] = await connection.execute(
+        'INSERT INTO customer (name, email, password) VALUES (?, ?, ?)',
+        [formData.name, formData.email, formData.password]
+      );
 
-      console.log('Sign-up successful:', data);
-      setSuccessMessage('Sign-up successful! You can now log in.'); // Set success message
+      console.log('Sign-up successful:', results);
+      setSuccessMessage('Sign-up successful! You can now log in.');
     } catch (error) {
-      setError(error.message);
+      setError(error.message); // Handle any errors during connection or query execution
     } finally {
+      // Close the connection (optional, might be handled by connection pool)
+      connection.end();
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="signup-form">
       <h1>Sign Up</h1>
