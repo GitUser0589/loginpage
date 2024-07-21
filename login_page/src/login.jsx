@@ -1,47 +1,29 @@
 import './App.css';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import supabase from './supabase'; // Import your Supabase client
+
 
 function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const navigate = useNavigate();
 
   // Implement your user login function here
-  const userLogin = async (email, password) => {
+  const userLogin = async (username, password) => {
     try {
-      // Query the "users" table with email filter
-      const { data, error } = await supabase
-        .from('users')
-        .select('*') // Select all columns (adjust if needed)
-        .eq('email', email)
-        .single();
+      const response = await connection.query(
+        'SELECT * FROM customer WHERE username = ? AND password = ?',
+        [username, password] // Prevent SQL injection with prepared statements
+      );
 
-      if (error) {
-        throw new Error('Error fetching user data'); // Re-throw for handling in handleSubmit
+      if (response.length === 0) {
+        return 'Invalid username or password.'; // User not found
       }
 
-      // Check if user exists
-      if (!data) {
-        return 'Invalid email or password.'; // User not found
-      }
-
-      // Compare password hashes securely (assuming hashed passwords)
-      const isPasswordValid = await supabase.auth.verifyPassword({
-        identifier: email,
-        password,
-        token: data.access_token, // Use access token from retrieved user data
-      });
-
-      if (isPasswordValid.error) {
-        return 'Invalid email or password.'; // Password mismatch
-      }
-
-      // Login successful, return user data
-      return data;
+      // Login successful, return user data (assuming you need the entire row)
+      return response[0];
     } catch (error) {
       console.error('Login error:', error);
       return 'An unexpected error occurred. Please try again.'; // Generic error for unexpected issues
@@ -54,12 +36,12 @@ function Login() {
     setErrorMessage(''); // Clear any previous error message
 
     try {
-      const userData = await userLogin(email, password); // Call the userLogin function
-      
-    if (userData) {
-      console.log('Login successful!');
-      setErrorMessage('Login Successful!');
-      setTimeout(() => navigate('/dashboard'), 1000); 
+      const userData = await userLogin(username, password);
+
+      if (userData) {
+        console.log('Login successful!');
+        setErrorMessage('Login Successful!');
+        setTimeout(() => navigate('/dashboard'), 1000);
       } else {
         setErrorMessage(userData); // Set error message from userLogin
       }
@@ -74,12 +56,12 @@ function Login() {
       <h1>Login</h1>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="username">Username:</label>
         <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text" // Username is typically not an email
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <label htmlFor="password">Password:</label>

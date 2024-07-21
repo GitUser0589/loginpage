@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 function SignUp() {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    contact_info: '', // New state for contact information
+    username: '',
     password: '',
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -17,18 +17,17 @@ function SignUp() {
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
-
+    
     try {
       const url = 'http://localhost:3000/customer'; // Replace with your backend URL
       const response = await fetch(url, {
         method: 'POST',
+        body: JSON.stringify(formData),
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: formData.username, password: formData.password }),
       });
-  
 
       if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`);
+        throw new Error(await response.text() || 'Signup failed.');
       }
 
       const data = await response.json();
@@ -46,10 +45,33 @@ function SignUp() {
     <div className="signup-form">
       <h1>Sign Up</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="username">
-          username:
+        <label htmlFor="name">
+          Name:
           <input
-            type="username"
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+          />
+        </label>
+        <label htmlFor="contact_info">
+          Contact Information:
+          <input
+            type="text" // Adjust type as needed (phone, email, etc.)
+            id="contact_info"
+            name="contact_info"
+            value={formData.contactInfo}
+            onChange={(e) =>
+              setFormData({ ...formData, contact_info: e.target.value })}
+            required
+          />
+        </label>
+        <label htmlFor="username">
+          Username:
+          <input
+            type="text"
             id="username"
             name="username"
             value={formData.username}
