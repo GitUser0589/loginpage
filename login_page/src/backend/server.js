@@ -22,6 +22,14 @@ app.get('/', (re, res)=> {
     return res.json("from backend side");
 })
 
+app.get('/gym', (req, res)=> {
+    const sql = "SELECT * FROM gym";
+    db.query(sql, (err, data)=> {
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
 app.get('/customer', (req, res)=> {
     const sql = "SELECT * FROM customer";
     db.query(sql, (err, data)=> {
