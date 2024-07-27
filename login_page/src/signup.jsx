@@ -19,7 +19,7 @@ function SignUp() {
     setSuccessMessage(null);
     
     try {
-      const url = 'http://localhost:3000/customer'; // Replace with your backend URL
+      const url = 'http://localhost:8081/customer'; // Replace with your backend URL
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(formData),
