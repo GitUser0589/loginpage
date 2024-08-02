@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 
 function SignUp() {
   const [formData, setFormData] = useState({
-    name: '',
-    contact_info: '', // New state for contact information
     username: '',
     password: '',
+    name: '',
+    contact_info: '', // New state for contact information
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -17,9 +17,9 @@ function SignUp() {
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
-    
+
     try {
-      const url = 'http://localhost:8081/customer'; // Replace with your backend URL
+      const url = 'http://localhost:8081/signup'; // Updated to the signup endpoint
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(formData),
@@ -62,7 +62,7 @@ function SignUp() {
             type="text" // Adjust type as needed (phone, email, etc.)
             id="contact_info"
             name="contact_info"
-            value={formData.contactInfo}
+            value={formData.contact_info} // Ensure this matches the state key
             onChange={(e) =>
               setFormData({ ...formData, contact_info: e.target.value })}
             required
