@@ -89,6 +89,14 @@ app.get('/gym', (req, res) => {
     });
 });
 
+app.get('/schedule', (req, res) => {
+    const sql = "SELECT * FROM schedule";
+    db.query(sql, (err, data) => {
+        if (err) return res.json(err);
+        return res.json(data);
+    });
+});
+
 app.get('/classes', (req, res) => {
     const sql = "SELECT * FROM classes";
     db.query(sql, (err, data) => {
