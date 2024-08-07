@@ -150,3 +150,25 @@ app.get('/customer', (req, res) => {
 app.listen(8081, () => {
     console.log("Server is running on port 8081.");
 });
+
+app.delete('/deleteMemberById', async (req, res) => {
+    const { customer_id } = req.body;
+
+    if (!customer_id) {
+        return res.status(400).json({ error: 'Member ID is required' });
+    }
+
+    try {
+        db.query('CALL DeleteMemberByID', [customer_id], (err) => {
+            if (err) {
+                console.error('Error deleting member:', err);
+                return res.status(500).json({ error: 'Failed to delete member' });
+            }
+            res.status(200).json({ message: 'Member deleted successfully' });
+        });
+    } catch (error) {
+        console.error('Error deleting member:', error);
+        res.status(500).json({ error: 'Failed to delete member' });
+    }
+});
+

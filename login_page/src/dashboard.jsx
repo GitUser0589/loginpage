@@ -9,29 +9,54 @@ function GymList() {
   const [selectedClassSchedule, setSelectedClassSchedule] = useState({});
   const [classes, setClasses] = useState([]);
   const [memberIdToDelete, setMemberIdToDelete] = useState('');
+  const [triggerDelete, setTriggerDelete] = useState(false);
+
+  useEffect(() => {
+    if (triggerDelete && memberIdToDelete) {
+      const handleDeleteMember = async () => {
+        try {
+          await axios.delete('http://localhost:8081/deleteMemberById', {
+            headers: { 'Content-Type': 'application/json' },
+            params: { customer_id: memberIdToDelete }
+          });
+          alert('Member deleted successfully.');
+          setMemberIdToDelete('');
+        } catch (error) {
+          console.error('Error deleting member:', error);
+          alert('Failed to delete member.');
+        } finally {
+          setTriggerDelete(false); // Reset trigger state
+        }
+      };
+
+      handleDeleteMember();
+    }
+  }, [triggerDelete, memberIdToDelete]);
 
   const handleClassChange = (event, gymId) => {
     const classId = event.target.value;
     setSelectedClasses({ ...selectedClasses, [gymId]: classId });
   };
 
-  const handleDeleteMember = async () => {
-    if (!memberIdToDelete) {
-      alert('Please enter a member ID.');
-      return;
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gymsResponse, classesResponse] = await Promise.all([
+          axios.get('http://localhost:8081/gym'),
+          axios.get('http://localhost:8081/classes')
+        ]);
 
-    try {
-      await axios.delete(`http://localhost:8081/deleteMemberById`, {
-        data: { member_id: memberIdToDelete }
-      });
-      alert('Member deleted successfully.');
-      setMemberIdToDelete('');
-    } catch (error) {
-      console.error('Error deleting member:', error);
-      alert('Failed to delete member.');
-    }
-  };
+        setGyms(gymsResponse.data);
+        setClasses(classesResponse.data);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const fetchScheduleAndClassDetails = async (gymId, classId) => {
@@ -45,14 +70,11 @@ function GymList() {
 
           const classResponse = await axios.get(`http://localhost:8081/classes?class_id=${classId}`);
           const selectedClass = classResponse.data;
-          
+
           setClasses((prevClasses) => {
-            const updatedClasses = prevClasses.map((c) => {
-              if (c.class_id === classId) {
-                return selectedClass;
-              }
-              return c;
-            });
+            const updatedClasses = prevClasses.map((c) =>
+              c.class_id === classId ? selectedClass : c
+            );
             return updatedClasses;
           });
         } catch (error) {
@@ -65,36 +87,6 @@ function GymList() {
       fetchScheduleAndClassDetails(gymId, selectedClasses[gymId]);
     });
   }, [selectedClasses]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const classesResponse = await axios.get('http://localhost:8081/classes');
-        setClasses(classesResponse.data);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const gymsResponse = await axios.get('http://localhost:8081/gym');
-        setGyms(gymsResponse.data);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   return (
     <div>
@@ -147,7 +139,7 @@ function GymList() {
           onChange={(e) => setMemberIdToDelete(e.target.value)}
           placeholder="Enter Member ID"
         />
-        <button onClick={handleDeleteMember}>Delete Member</button>
+        <button onClick={() => setTriggerDelete(true)}>Delete Member</button>
       </div>
     </div>
   );
