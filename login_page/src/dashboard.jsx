@@ -12,8 +12,8 @@ function GymList() {
   const [triggerDelete, setTriggerDelete] = useState(false);
 
   useEffect(() => {
-    if (triggerDelete && memberIdToDelete) {
-      const handleDeleteMember = async () => {
+    const handleDeleteMember = async () => {
+      if (triggerDelete && memberIdToDelete) {
         try {
           await axios.delete('http://localhost:8081/deleteMemberById', {
             headers: { 'Content-Type': 'application/json' },
@@ -22,15 +22,15 @@ function GymList() {
           alert('Member deleted successfully.');
           setMemberIdToDelete('');
         } catch (error) {
-          console.error('Error deleting member:', error);
+          console.error('Error deleting member:', error.response ? error.response.data : error.message);
           alert('Failed to delete member.');
         } finally {
           setTriggerDelete(false); // Reset trigger state
         }
-      };
+      }
+    };
 
-      handleDeleteMember();
-    }
+    handleDeleteMember();
   }, [triggerDelete, memberIdToDelete]);
 
   const handleClassChange = (event, gymId) => {
@@ -62,13 +62,16 @@ function GymList() {
     const fetchScheduleAndClassDetails = async (gymId, classId) => {
       if (classId) {
         try {
-          const scheduleResponse = await axios.get(`http://localhost:8081/schedule?schedule_id=${classId}`);
+          const [scheduleResponse, classResponse] = await Promise.all([
+            axios.get(`http://localhost:8081/schedule?schedule_id=${classId}`),
+            axios.get(`http://localhost:8081/classes?class_id=${classId}`)
+          ]);
+
           setSelectedClassSchedule((prevSchedule) => ({
             ...prevSchedule,
             [gymId]: scheduleResponse.data,
           }));
 
-          const classResponse = await axios.get(`http://localhost:8081/classes?class_id=${classId}`);
           const selectedClass = classResponse.data;
 
           setClasses((prevClasses) => {

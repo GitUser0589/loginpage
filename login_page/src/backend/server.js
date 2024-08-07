@@ -88,17 +88,16 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Delete Member by ID
 app.delete('/deleteMemberById', async (req, res) => {
-    const { member_id } = req.body;
+    const { customer_id } = req.query;
 
-    if (!member_id) {
+    if (!customer_id) {
         return res.status(400).json({ error: 'Member ID is required' });
     }
 
     try {
         // Call stored procedure to delete member
-        db.query('CALL deletememberbyid(?)', [member_id], (err) => {
+        db.query('CALL delete_member_by_id(?)', [customer_id], (err) => {
             if (err) {
                 console.error('Error deleting member:', err);
                 return res.status(500).json({ error: 'Failed to delete member' });
@@ -110,6 +109,7 @@ app.delete('/deleteMemberById', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete member' });
     }
 });
+
 
 // Get Gyms
 app.get('/gym', (req, res) => {
@@ -150,25 +150,3 @@ app.get('/customer', (req, res) => {
 app.listen(8081, () => {
     console.log("Server is running on port 8081.");
 });
-
-app.delete('/deleteMemberById', async (req, res) => {
-    const { customer_id } = req.body;
-
-    if (!customer_id) {
-        return res.status(400).json({ error: 'Member ID is required' });
-    }
-
-    try {
-        db.query('CALL DeleteMemberByID', [customer_id], (err) => {
-            if (err) {
-                console.error('Error deleting member:', err);
-                return res.status(500).json({ error: 'Failed to delete member' });
-            }
-            res.status(200).json({ message: 'Member deleted successfully' });
-        });
-    } catch (error) {
-        console.error('Error deleting member:', error);
-        res.status(500).json({ error: 'Failed to delete member' });
-    }
-});
-
