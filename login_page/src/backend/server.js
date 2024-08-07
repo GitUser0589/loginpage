@@ -17,7 +17,7 @@ const db = mysql.createConnection({
 
 // Handle OPTIONS requests for CORS
 app.options('/*', (req, res) => {
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'); // Allow POST, GET, OPTIONS methods
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE'); // Allow DELETE method
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allow Content-Type header
     res.sendStatus(200); // Send successful response
 });
@@ -32,24 +32,29 @@ app.post('/signup', async (req, res) => {
 
     try {
         // Check if the username already exists
-        const [existingUsers] = await db.query('SELECT * FROM customer WHERE username = ?', [username]);
-        if (existingUsers.length > 0) {
-            return res.status(400).json({ error: 'Username already exists.' });
-        }
+        db.query('SELECT * FROM customer WHERE username = ?', [username], async (err, existingUsers) => {
+            if (err) return res.status(500).json({ error: 'Internal server error', details: err });
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+            if (existingUsers.length > 0) {
+                return res.status(400).json({ error: 'Username already exists.' });
+            }
 
-        // Insert new user into the database
-        await db.query('INSERT INTO customer (username, password) VALUES (?, ?)', [username, hashedPassword]);
-        return res.status(201).json({ message: 'User created successfully.' });
+            // Hash the password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Insert new user into the database
+            db.query('INSERT INTO customer (username, password) VALUES (?, ?)', [username, hashedPassword], (err) => {
+                if (err) return res.status(500).json({ error: 'Internal server error', details: err });
+                return res.status(201).json({ message: 'User created successfully.' });
+            });
+        });
     } catch (err) {
         return res.status(500).json({ error: 'Internal server error', details: err });
     }
 });
 
 // Login
-app.post('/signup', async (req, res) => {
+app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -57,66 +62,87 @@ app.post('/signup', async (req, res) => {
     }
 
     try {
-        // Check if the username already exists
-        const [existingUsers] = await db.query('SELECT * FROM customer WHERE username = ?', [username]);
-        if (existingUsers.length > 0) {
-            return res.status(400).json({ error: 'Username already exists.' });
-        }
+        // Check if the username exists
+        db.query('SELECT * FROM customer WHERE username = ?', [username], async (err, users) => {
+            if (err) return res.status(500).json({ error: 'Internal server error', details: err });
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+            if (users.length === 0) {
+                return res.status(401).json({ error: 'Invalid username or password.' });
+            }
 
-        // Insert new user into the database
-        await db.query('INSERT INTO customer (username, password) VALUES (?, ?)', [username, hashedPassword]);
-        return res.status(201).json({ message: 'User created successfully.' });
+            const user = users[0];
+            // Compare password with hashed password in the database
+            const match = await bcrypt.compare(password, user.password);
+
+            if (!match) {
+                return res.status(401).json({ error: 'Invalid username or password.' });
+            }
+
+            // Generate JWT token (for example purposes, you may want to use a more secure secret key)
+            const token = jwt.sign({ userId: user.id }, 'your_jwt_secret_key', { expiresIn: '1h' });
+            return res.status(200).json({ message: 'Login successful', token });
+        });
     } catch (err) {
-        console.error('Error during signup:', err); // Log the error to the server console
+        console.error('Error during login:', err); // Log the error to the server console
         return res.status(500).json({ error: 'Internal server error', details: err.message });
     }
 });
 
+// Delete Member by ID
+app.delete('/deleteMemberById', async (req, res) => {
+    const { member_id } = req.body;
 
-// Other routes
-app.get('/', (req, res) => {
-    return res.json("from backend side");
+    if (!member_id) {
+        return res.status(400).json({ error: 'Member ID is required' });
+    }
+
+    try {
+        // Call stored procedure to delete member
+        db.query('CALL deletememberbyid(?)', [member_id], (err) => {
+            if (err) {
+                console.error('Error deleting member:', err);
+                return res.status(500).json({ error: 'Failed to delete member' });
+            }
+            res.status(200).json({ message: 'Member deleted successfully' });
+        });
+    } catch (error) {
+        console.error('Error deleting member:', error);
+        res.status(500).json({ error: 'Failed to delete member' });
+    }
 });
 
+// Get Gyms
 app.get('/gym', (req, res) => {
     const sql = "SELECT * FROM gym";
     db.query(sql, (err, data) => {
-        if (err) return res.json(err);
+        if (err) return res.status(500).json(err);
         return res.json(data);
     });
 });
 
+// Get Schedule
 app.get('/schedule', (req, res) => {
     const sql = "SELECT * FROM schedule";
     db.query(sql, (err, data) => {
-        if (err) return res.json(err);
+        if (err) return res.status(500).json(err);
         return res.json(data);
     });
 });
 
+// Get Classes
 app.get('/classes', (req, res) => {
     const sql = "SELECT * FROM classes";
     db.query(sql, (err, data) => {
-        if (err) return res.json(err);
+        if (err) return res.status(500).json(err);
         return res.json(data);
     });
 });
 
-app.get('/schedule', (req, res) => {
-    const sql = "SELECT * FROM schedule";
-    db.query(sql, (err, data) => {
-        if (err) return res.json(err);
-        return res.json(data);
-    });
-});
-
+// Get Customers
 app.get('/customer', (req, res) => {
     const sql = "SELECT * FROM customer";
     db.query(sql, (err, data) => {
-        if (err) return res.json(err);
+        if (err) return res.status(500).json(err);
         return res.json(data);
     });
 });

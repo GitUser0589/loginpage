@@ -5,35 +5,51 @@ function GymList() {
   const [gyms, setGyms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedClasses, setSelectedClasses] = useState({}); // Use an object to store selected class for each gym
+  const [selectedClasses, setSelectedClasses] = useState({});
   const [selectedClassSchedule, setSelectedClassSchedule] = useState({});
   const [classes, setClasses] = useState([]);
+  const [memberIdToDelete, setMemberIdToDelete] = useState('');
 
   const handleClassChange = (event, gymId) => {
     const classId = event.target.value;
-    setSelectedClasses({ ...selectedClasses, [gymId]: classId }); // Update selected class for the specific gym
+    setSelectedClasses({ ...selectedClasses, [gymId]: classId });
+  };
+
+  const handleDeleteMember = async () => {
+    if (!memberIdToDelete) {
+      alert('Please enter a member ID.');
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:8081/deleteMemberById`, {
+        data: { member_id: memberIdToDelete }
+      });
+      alert('Member deleted successfully.');
+      setMemberIdToDelete('');
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert('Failed to delete member.');
+    }
   };
 
   useEffect(() => {
     const fetchScheduleAndClassDetails = async (gymId, classId) => {
       if (classId) {
         try {
-          // Fetch schedule for the selected class
           const scheduleResponse = await axios.get(`http://localhost:8081/schedule?schedule_id=${classId}`);
           setSelectedClassSchedule((prevSchedule) => ({
             ...prevSchedule,
             [gymId]: scheduleResponse.data,
           }));
 
-          // Fetch details of the selected class, including description
           const classResponse = await axios.get(`http://localhost:8081/classes?class_id=${classId}`);
           const selectedClass = classResponse.data;
           
-          // Update or replace the selected class in the classes state array
           setClasses((prevClasses) => {
             const updatedClasses = prevClasses.map((c) => {
               if (c.class_id === classId) {
-                return selectedClass; // Replace existing class with updated details
+                return selectedClass;
               }
               return c;
             });
@@ -48,13 +64,13 @@ function GymList() {
     Object.keys(selectedClasses).forEach((gymId) => {
       fetchScheduleAndClassDetails(gymId, selectedClasses[gymId]);
     });
-  }, [selectedClasses]); // Watch for changes in selectedClasses object
+  }, [selectedClasses]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const classesResponse = await axios.get('http://localhost:8081/classes');
-        setClasses(classesResponse.data); // Assuming response.data is an array of classes
+        setClasses(classesResponse.data);
       } catch (error) {
         setError(error);
       } finally {
@@ -69,7 +85,7 @@ function GymList() {
     const fetchData = async () => {
       try {
         const gymsResponse = await axios.get('http://localhost:8081/gym');
-        setGyms(gymsResponse.data); // Assuming response.data is an array of gyms with classes array
+        setGyms(gymsResponse.data);
       } catch (error) {
         setError(error);
       } finally {
@@ -109,7 +125,7 @@ function GymList() {
                   <ul>
                     {selectedClassSchedule[gym.gym_id]?.map((schedule) => (
                       <li key={schedule.schedule_id}>
-                        {schedule.start_time} - {schedule.end_time} {/* Assuming schedule times */}
+                        {schedule.start_time} - {schedule.end_time}
                       </li>
                     ))}
                   </ul>
@@ -122,6 +138,17 @@ function GymList() {
       ) : (
         <p>No gyms found.</p>
       )}
+
+      <div>
+        <h3>Delete Member</h3>
+        <input
+          type="text"
+          value={memberIdToDelete}
+          onChange={(e) => setMemberIdToDelete(e.target.value)}
+          placeholder="Enter Member ID"
+        />
+        <button onClick={handleDeleteMember}>Delete Member</button>
+      </div>
     </div>
   );
 }
