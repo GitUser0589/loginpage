@@ -110,6 +110,52 @@ app.delete('/deleteMemberById', async (req, res) => {
     }
 });
 
+app.delete('/deleteInstructorById', async (req, res) => {
+    const { instructor_id } = req.query;
+
+    if (!instructor_id) {
+        return res.status(400).json({ error: 'Member ID is required' });
+    }
+
+    try {
+        // Call stored procedure to delete member
+        db.query('CALL delete_instructor_by_id(?)', [instructor_id], (err) => {
+            if (err) {
+                console.error('Error deleting instructor:', err);
+                return res.status(500).json({ error: 'Failed to delete instructor' });
+            }
+            res.status(200).json({ message: 'instructor deleted successfully' });
+        });
+    } catch (error) {
+        console.error('Error deleting instructor:', error);
+        res.status(500).json({ error: 'Failed to delete instructor' });
+    }
+});
+
+app.delete('/deleteClassById', async (req, res) => {
+    const { class_id } = req.query;
+
+    if (!class_id) {
+        return res.status(400).json({ error: 'class ID is required' });
+    }
+
+    try {
+        // Call stored procedure to delete member
+        db.query('CALL delete_classes_by_id(?)', [class_id], (err) => {
+            if (err) {
+                console.error('Error deleting class:', err);
+                return res.status(500).json({ error: 'Failed to delete class' });
+            }
+            res.status(200).json({ message: 'class deleted successfully' });
+        });
+    } catch (error) {
+        console.error('Error deleting class:', error);
+        res.status(500).json({ error: 'Failed to delete class' });
+    }
+});
+
+
+
 
 // Get Gyms
 app.get('/gym', (req, res) => {

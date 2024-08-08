@@ -10,6 +10,10 @@ function GymList() {
   const [classes, setClasses] = useState([]);
   const [memberIdToDelete, setMemberIdToDelete] = useState('');
   const [triggerDelete, setTriggerDelete] = useState(false);
+  const [instructorIdToDelete, setInstructorIdToDelete] = useState('');
+  const [triggerInstructorDelete, setTriggerInstructorDelete] = useState(false);
+  const [classIdToDelete, setClassIdToDelete] = useState('');
+  const [triggerClassDelete, setTriggerClassDelete] = useState(false);
 
   useEffect(() => {
     const handleDeleteMember = async () => {
@@ -25,13 +29,57 @@ function GymList() {
           console.error('Error deleting member:', error.response ? error.response.data : error.message);
           alert('Failed to delete member.');
         } finally {
-          setTriggerDelete(false); // Reset trigger state
+          setTriggerDelete(false);
         }
       }
     };
 
     handleDeleteMember();
   }, [triggerDelete, memberIdToDelete]);
+
+  useEffect(() => {
+    const handleDeleteInstructor = async () => {
+      if (triggerInstructorDelete && instructorIdToDelete) {
+        try {
+          await axios.delete('http://localhost:8081/deleteInstructorById', {
+            headers: { 'Content-Type': 'application/json' },
+            params: { instructor_id: instructorIdToDelete }
+          });
+          alert('Instructor deleted successfully.');
+          setInstructorIdToDelete('');
+        } catch (error) {
+          console.error('Error deleting instructor:', error.response ? error.response.data : error.message);
+          alert('Failed to delete instructor.');
+        } finally {
+          setTriggerInstructorDelete(false);
+        }
+      }
+    };
+
+    handleDeleteInstructor();
+  }, [triggerInstructorDelete, instructorIdToDelete]);
+
+  useEffect(() => {
+    const handleDeleteClass = async () => {
+      if (triggerClassDelete && classIdToDelete) {
+        try {
+          await axios.delete('http://localhost:8081/deleteClassById', {
+            headers: { 'Content-Type': 'application/json' },
+            params: { class_id: classIdToDelete }
+          });
+          alert('Class deleted successfully.');
+          setClassIdToDelete('');
+        } catch (error) {
+          console.error('Error deleting class:', error.response ? error.response.data : error.message);
+          alert('Failed to delete class.');
+        } finally {
+          setTriggerClassDelete(false);
+        }
+      }
+    };
+
+    handleDeleteClass();
+  }, [triggerClassDelete, classIdToDelete]);
 
   const handleClassChange = (event, gymId) => {
     const classId = event.target.value;
@@ -126,7 +174,6 @@ function GymList() {
                   </ul>
                 </div>
               )}
-              {/* Additional details like amenities, pricing can be added here */}
             </li>
           ))}
         </ul>
@@ -143,6 +190,28 @@ function GymList() {
           placeholder="Enter Member ID"
         />
         <button onClick={() => setTriggerDelete(true)}>Delete Member</button>
+      </div>
+
+      <div>
+        <h3>Delete Instructor</h3>
+        <input
+          type="text"
+          value={instructorIdToDelete}
+          onChange={(e) => setInstructorIdToDelete(e.target.value)}
+          placeholder="Enter Instructor ID"
+        />
+        <button onClick={() => setTriggerInstructorDelete(true)}>Delete Instructor</button>
+      </div>
+
+      <div>
+        <h3>Delete Class</h3>
+        <input
+          type="text"
+          value={classIdToDelete}
+          onChange={(e) => setClassIdToDelete(e.target.value)}
+          placeholder="Enter Class ID"
+        />
+        <button onClick={() => setTriggerClassDelete(true)}>Delete Class</button>
       </div>
     </div>
   );
