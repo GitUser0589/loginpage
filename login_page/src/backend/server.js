@@ -184,9 +184,29 @@ app.get('/classes', (req, res) => {
     });
 });
 
+app.get('/view-instructors', (req, res) => {
+    const sql = "SELECT * FROM viewinstructors";
+    db.query(sql, (err, data) => {
+        if (err) {
+            console.error('Error fetching instructors:', err);
+            return res.status(500).json({ error: 'Failed to fetch instructors' });
+        }
+        return res.json(data);
+    });
+});
+
+
 // Get Customers
 app.get('/customer', (req, res) => {
     const sql = "SELECT * FROM customer";
+    db.query(sql, (err, data) => {
+        if (err) return res.status(500).json(err);
+        return res.json(data);
+    });
+});
+
+app.get('/instructor', (req, res) => {
+    const sql = "SELECT * FROM instructor";
     db.query(sql, (err, data) => {
         if (err) return res.status(500).json(err);
         return res.json(data);

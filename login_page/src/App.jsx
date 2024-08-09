@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from './login'; // Import Login component directly
 import SignUp from "./signup";
 import Dashboard from './dashboard';
+import Admin from "./admindashboard";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: 'dashboard',
     element: <Dashboard />
+  },
+  {
+    path: 'Admin',
+    element: <Admin />
   }
 ]);
 
